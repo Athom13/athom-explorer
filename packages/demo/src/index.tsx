@@ -118,11 +118,16 @@ async function init(): Promise<boolean> {
 	}
 }
 
-async function mount() {
+async function mount(attempt = 0): Promise<void> {
 	try {
 		const root = <App />;
 		app.replaceWith(root);
 	} catch (e) {
+		if (attempt < 3 && e instanceof TypeError && e.message.includes("cssRules")) {
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			app = document.getElementById("app") ?? app;
+			return mount(attempt + 1);
+		}
 		let err = e as any;
 		app.replaceWith(
 			document.createTextNode(
