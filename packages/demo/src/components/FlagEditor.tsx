@@ -16,26 +16,26 @@ const flagStore = createStore<ScramjetFlags>(
 
 // Flag descriptions for better UX
 const flagDescriptions: Record<keyof ScramjetFlags, string> = {
-	syncxhr: "Enable synchronous XMLHttpRequest support",
-	disableComputedWrap: "Skip deep js interception for better runtime speed",
-	cleanErrors: "prevent sites from noticing scramjet stack frames",
+		syncxhr: "Activer la prise en charge de XMLHttpRequest synchrone",
+		disableComputedWrap: "Ignorer l’interception JS profonde pour de meilleures performances",
+		cleanErrors: "Empêcher les sites de détecter les frames de pile Scramjet",
 	sourcemaps:
-		"prevent sites from noticing javascript transformations (at a performance cost)",
+			"Empêcher les sites de détecter les transformations JavaScript (au prix des performances)",
 	destructureRewrites:
-		"enable support for rewriting es6 destructure syntax (currently experimental)",
+			"Activer la réécriture de la syntaxe de déstructuration ES6 (expérimental)",
 	allowInvalidJs:
-		"if invalid javascript is evaluated, pass through unsafely instead of throwing",
+			"Laisser passer le JavaScript invalide au lieu de générer une erreur",
 	allowFailedIntercepts:
-		"if an api interceptor fails, call the api with original input unsafely instead of throwing",
+			"En cas d’échec d’interception, appeler l’API avec les données originales",
 	encapsulateWorkers:
-		"wrap web worker scripts in data urls to prevent scope issues (potentially buggy)",
+			"Encapsuler les scripts Worker dans des URL data pour éviter les problèmes de portée",
 	scramitize:
-		"Trigger debugger whenever the string 'scramjet' or the real location is detected in attacker code (debug feature)",
-	rewriterLogs: "Enable rewriter logging (debug feature)",
-	captureErrors: "Capture and handle JavaScript errors (debug feature)",
-	debugTrampolines: "Show proxied api in stack traces (debug feature)",
+			"Déclencher le débogueur si ‘scramjet’ ou l’emplacement réel est détecté",
+		rewriterLogs: "Activer les journaux du réécriveur (débogage)",
+		captureErrors: "Capturer et gérer les erreurs JavaScript (débogage)",
+		debugTrampolines: "Afficher les API proxyfiées dans les piles d’appels (débogage)",
 	debugSourceURL:
-		"Make debugger recognize javascript source urls consistently (debug feature)",
+		"Permettre au débogueur de reconnaître les URL source JavaScript (débogage)",
 };
 
 const FlagEditor: Component<
@@ -93,18 +93,18 @@ const FlagEditor: Component<
 					this.isOpen = !this.isOpen;
 				}}
 			>
-				{use(this.isOpen).map((open) => (open ? "▼" : "▶"))} Flag Editor
+				{use(this.isOpen).map((open) => (open ? "▼" : "▶"))} Éditeur d’options
 			</button>
 			{use(this.isOpen).andThen(
 				<div class="editor-panel">
 					<div class="header">
-						<h3>Scramjet Feature Flags</h3>
+						<h3>Options Scramjet</h3>
 						<div class="header-actions">
 							<button class="cache-bust-button" on:click={bustCache}>
-								Bust Cache
+								Vider le cache
 							</button>
 							<button class="reset-button" on:click={resetToDefaults}>
-								Reset to Defaults
+								Réinitialiser
 							</button>
 						</div>
 					</div>
@@ -142,9 +142,9 @@ FlagEditor.style = css`
 		top: 1em;
 		right: 1em;
 		z-index: 1000;
-		background: rgba(0, 0, 0, 0.9);
-		border: 1px solid #444;
-		border-radius: 8px;
+		background: rgb(20 20 20 / 72%);
+		border: 1px solid rgb(255 255 255 / 16%);
+		border-radius: 12px;
 		color: white;
 		font-family:
 			system-ui,
@@ -152,7 +152,8 @@ FlagEditor.style = css`
 			sans-serif;
 		font-size: 14px;
 		max-width: 400px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+		backdrop-filter: blur(14px);
 	}
 
 	:scope.inline {
@@ -181,9 +182,9 @@ FlagEditor.style = css`
 
 	:scope.inline .toggle-button {
 		padding: 0.35em 0.7em;
-		background: #1a1a1a;
-		border: 1px solid #2a2a2a;
-		border-radius: 0;
+		background: rgb(255 255 255 / 7%);
+		border: 1px solid rgb(255 255 255 / 14%);
+		border-radius: 8px;
 		font-size: 0.8em;
 		line-height: 1.2;
 		min-height: 28px;

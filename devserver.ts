@@ -16,6 +16,7 @@ import {
 	printBanner,
 } from "./devlib.ts";
 import rspackConfig from "./rspack.config.ts";
+import { authMiddleware } from "./auth-server.ts";
 
 const image = await fs.readFile("./assets/scramjet-mini-noalpha.png");
 
@@ -60,6 +61,12 @@ const server = await createServer({
 });
 
 warnOnUrlEscape(server);
+server.middlewares.stack.unshift({
+	route: "",
+	handle: (req, res, next) => {
+		void authMiddleware(req, res, next);
+	},
+});
 
 await server.listen();
 

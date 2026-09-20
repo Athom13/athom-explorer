@@ -4,7 +4,7 @@ const LoadInterstitial: Component<{
 }> = function () {
 	return (
 		<dialog class="signin">
-			<h1>Loading</h1>
+			<h1>Chargement</h1>
 			<p>{use(this.status)}</p>
 		</dialog>
 	);

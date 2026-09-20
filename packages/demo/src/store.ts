@@ -9,10 +9,15 @@ export const AVAILABLE_TRANSPORTS: ReadonlyArray<{
 	{ value: "libcurl", label: "Libcurl" },
 	{ value: "epoxy", label: "Epoxy" },
 ];
-const DEFAULT_WISP_URL = import.meta.env.VITE_WISP_URL;
+const DEFAULT_WISP_URL = "wss://anura.pro";
 const DEFAULT_TRANSPORT: AvailableTransports = "libcurl";
 const DEFAULT_HOME_URL = "https://google.com";
 const DEFAULT_MAX_REQUESTS = 200;
+const DEFAULT_PANIC_KEY = "";
+const DEFAULT_PANIC_URLS = "https://classroom.google.com/";
+const DEFAULT_TAB_CLOAK_PRESET = "athom";
+const DEFAULT_CUSTOM_TAB_NAME = "";
+const DEFAULT_CUSTOM_ICON_URL = "";
 
 export const demoSettingsStore = createStore(
 	{
@@ -20,6 +25,11 @@ export const demoSettingsStore = createStore(
 		wispUrl: DEFAULT_WISP_URL,
 		homeUrl: DEFAULT_HOME_URL,
 		maxRequests: DEFAULT_MAX_REQUESTS,
+		panicKey: DEFAULT_PANIC_KEY,
+		panicUrls: DEFAULT_PANIC_URLS,
+		tabCloakPreset: DEFAULT_TAB_CLOAK_PRESET,
+		customTabName: DEFAULT_CUSTOM_TAB_NAME,
+		customIconUrl: DEFAULT_CUSTOM_ICON_URL,
 	},
 	{
 		ident: "scramjet-demo-settings",
@@ -84,9 +94,41 @@ export function normalizeMaxRequests(value: string | number) {
 	return rounded;
 }
 
+export function normalizePanicUrls(value: string) {
+	const urls = value
+		.split(",")
+		.map((url) => url.trim())
+		.filter(Boolean)
+		.map(normalizeHomeUrl);
+	if (!urls.length) {
+		throw new TypeError("Au moins une URL d’urgence est requise.");
+	}
+	return urls.join(",");
+}
+
+export function normalizeTabCloakPreset(value: string) {
+	if (["none", "google", "wikipedia","athom", "custom"].includes(value)) return value;
+	throw new TypeError("Preset de camouflage inconnu.");
+}
+
+export function normalizeOptionalText(value: string) {
+	return value.trim();
+}
+
+export function normalizeIconUrl(value: string) {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+	return new URL(trimmed, window.location.href).toString();
+}
+
 export const demoSettingsDefaults = {
 	wispUrl: normalizeWispUrl(DEFAULT_WISP_URL),
 	transport: DEFAULT_TRANSPORT,
 	homeUrl: normalizeHomeUrl(DEFAULT_HOME_URL),
 	maxRequests: DEFAULT_MAX_REQUESTS,
+	panicKey: DEFAULT_PANIC_KEY,
+	panicUrls: normalizePanicUrls(DEFAULT_PANIC_URLS),
+	tabCloakPreset: DEFAULT_TAB_CLOAK_PRESET,
+	customTabName: DEFAULT_CUSTOM_TAB_NAME,
+	customIconUrl: DEFAULT_CUSTOM_ICON_URL,
 };

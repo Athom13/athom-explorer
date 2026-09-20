@@ -5,7 +5,10 @@ import EpoxyClient from "@mercuryworkshop/epoxy-transport";
 import { defaultConfigDev } from "@mercuryworkshop/scramjet";
 import { Controller } from "@mercuryworkshop/scramjet-controller";
 import { HttpCachePlugin } from "@mercuryworkshop/scramjet-utils";
-import { demoSettingsStore } from "./store";
+import { demoSettingsStore, normalizeWispUrl } from "./store";
+import AuthPage from "./components/AuthPage";
+
+const originalDocumentTitle = document.title;
 
 let app = document.getElementById("app")!;
 
@@ -13,7 +16,7 @@ let controller: InstanceType<typeof Controller>;
 const cachePlugin = new HttpCachePlugin();
 
 export function getTransport(): LibcurlClient | EpoxyClient {
-	const wispUrl = demoSettingsStore.wispUrl;
+	const wispUrl = normalizeWispUrl(demoSettingsStore.wispUrl);
 	switch (demoSettingsStore.transport) {
 		case "epoxy":
 			return new EpoxyClient({ wisp: wispUrl });
@@ -44,7 +47,7 @@ async function waitForControllerOrReady(timeoutMs = 10000): Promise<void> {
 	await Promise.race([ready, controllerChanged, timeout]);
 }
 
-async function init() {
+async function init(): Promise<boolean> {
 	const interstitial: any = (
 		<LoadInterstitial status={"Loading"}></LoadInterstitial>
 	);
@@ -102,6 +105,7 @@ async function init() {
 		console.log(controller);
 		interstitial.$.state.status = "Controller initialized";
 		interstitial.close();
+		return true;
 	} catch (e) {
 		console.error("Error during service worker registration:", e);
 		// Always close the modal on error to prevent hanging UI.
@@ -110,6 +114,7 @@ async function init() {
 		} catch {}
 		app.innerText =
 			"Failed to register service worker. Check console for details.";
+		return false;
 	}
 }
 
@@ -129,5 +134,64 @@ async function mount() {
 	}
 }
 
-init().then(() => mount());
+async function requireAuthentication() {
+	const response = await fetch("/api/auth/status");
+	const status = (await response.json()) as { enabled: boolean; authenticated: boolean };
+	if (!status.enabled || status.authenticated) return;
+	await new Promise<void>((resolve) => {
+		const auth = <AuthPage onAuthenticated={resolve} />;
+		document.body.append(auth);
+	});
+	document.querySelector(".auth-page")?.remove();
+}
+
+requireAuthentication().then(async () => {
+		if (await init()) await mount();
+	});
 export { controller, cachePlugin };
+
+function applyTabCloak() {
+	const presets: Record<string, { name: string; icon: string }> = {
+		google: {
+			name: "Google",
+			icon: "https://www.google.com/s2/favicons?domain=google.com&sz=64",
+		},
+		wikipedia: {
+			name: "Wikipedia",
+			icon: "https://www.google.com/s2/favicons?domain=wikipedia.org&sz=64",
+		},
+		athom : {
+				name: "Athom Explorer",
+				icon: "https://cdn-icons-png.flaticon.com/512/639/639347.png",
+			},
+	};
+	const preset = presets[demoSettingsStore.tabCloakPreset];
+	document.title =
+		demoSettingsStore.tabCloakPreset === "custom"
+			? demoSettingsStore.customTabName || originalDocumentTitle
+			: preset?.name || originalDocumentTitle;
+	const icon =
+		demoSettingsStore.tabCloakPreset === "custom"
+			? demoSettingsStore.customIconUrl
+			: preset?.icon || "";
+	let link = document.querySelector<HTMLLinkElement>("link[data-tab-cloak]");
+	if (!link) {
+		link = document.createElement("link");
+		link.dataset.tabCloak = "true";
+		link.rel = "icon";
+		document.head.append(link);
+	}
+	link.href = icon;
+}
+
+function setupPanicKey() {
+	window.addEventListener("keydown", (event) => {
+		if (!demoSettingsStore.panicKey || event.key !== demoSettingsStore.panicKey) return;
+		const urls = demoSettingsStore.panicUrls.split(",").filter(Boolean);
+		const url = urls[Math.floor(Math.random() * urls.length)];
+		if (url) window.location.assign(url);
+	});
+}
+
+applyTabCloak();
+setupPanicKey();

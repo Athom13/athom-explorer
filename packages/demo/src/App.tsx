@@ -1,7 +1,6 @@
-import { css, createDelegate, type Component } from "dreamland/core";
-import type { Frame } from "@mercuryworkshop/scramjet-controller";
+import { css, type Component } from "dreamland/core";
 import FlagEditor from "./components/FlagEditor";
-import BrowserView from "./pages/BrowserView";
+import BrowserView, { BrowserTabs } from "./pages/BrowserView";
 import RequestViewer from "./pages/RequestViewer";
 import PlaygroundView from "./pages/Playground";
 import SettingsView from "./pages/SettingsPage";
@@ -16,8 +15,8 @@ const App: Component<
 	}
 > = function (cx) {
 	this.activeTab ??= "browser";
-	return (
-		<div>
+	const site = (
+		<div class="app-content">
 			<div class="top-bar">
 				<div class="tab-bar">
 					<button
@@ -28,7 +27,7 @@ const App: Component<
 							this.activeTab = "browser";
 						}}
 					>
-						Browser
+						Navigateur
 					</button>
 					<button
 						class={use(this.activeTab).map(
@@ -38,7 +37,7 @@ const App: Component<
 							this.activeTab = "requests";
 						}}
 					>
-						Requests{" "}
+						Requêtes{" "}
 						{use(requestsState.requests).map((requests) =>
 							requests.length ? `(${requests.length})` : ""
 						)}
@@ -51,7 +50,7 @@ const App: Component<
 							this.activeTab = "playground";
 						}}
 					>
-						Playground
+						Atelier
 					</button>
 					<button
 						class={use(this.activeTab).map(
@@ -61,16 +60,21 @@ const App: Component<
 							this.activeTab = "settings";
 						}}
 					>
-						Settings
+						Paramètres
 					</button>
-					{use(this.activeTab)
-						.map((tab) => tab === "browser")
-						.andThen(<Omnibox />)}
 				</div>
 				<div class="top-actions">
 					<FlagEditor inline={true} />
 				</div>
 			</div>
+			{use(this.activeTab).map((tab) =>
+				tab === "browser" ? (
+					<div class="browser-chrome">
+						<BrowserTabs />
+						<Omnibox />
+					</div>
+				) : null
+			)}
 			<div
 				class={use(this.activeTab).map(
 					(tab) =>
@@ -111,6 +115,7 @@ const App: Component<
 			</div>
 		</div>
 	);
+	return <div class="app-shell">{site}</div>;
 };
 
 App.style = css`
@@ -128,8 +133,18 @@ App.style = css`
 		left: 0;
 
 		padding: 0;
-		background: black;
+		background:
+			radial-gradient(circle at 15% 0%, #252525 0, transparent 38%),
+			#080808;
 		box-sizing: border-box;
+	}
+	.app-content {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		min-height: 0;
 	}
 	.material-symbols-outlined {
 		font-family: "Material Symbols Outlined";
@@ -148,24 +163,28 @@ App.style = css`
 	.top-bar {
 		display: flex;
 		align-items: stretch;
-		gap: 0;
-		margin-bottom: 0;
-		border-bottom: 1px solid #4a4a4a;
-		background: #0f0f0f;
+		gap: 8px;
+		margin: 6px 8px 0;
+		padding: 4px;
+		border: 1px solid rgb(255 255 255 / 12%);
+		border-radius: 12px;
+		background: rgb(25 25 25 / 72%);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 24%);
+		backdrop-filter: blur(14px);
 	}
 	.tab-bar {
 		display: flex;
 		flex: 1;
 		align-items: stretch;
-		gap: 0;
+		gap: 4px;
+		min-width: 0;
 	}
 	.tab-button {
-		border: 1px solid transparent;
-		border-bottom: 0;
-		background: transparent;
+		border: 1px solid rgb(255 255 255 / 8%);
+		background: rgb(255 255 255 / 3%);
 		color: #a8a8a8;
 		padding: 0.24em 0.62em;
-		border-radius: 0;
+		border-radius: 9px;
 		cursor: pointer;
 		font-size: 0.84em;
 		line-height: 1.2;
@@ -176,14 +195,15 @@ App.style = css`
 		align-items: center;
 	}
 	.tab-button:hover {
-		background: #181818;
+		background: rgb(255 255 255 / 10%);
+		border-color: rgb(255 255 255 / 18%);
 		color: #d0d0d0;
 	}
 	.tab-button.active {
-		background: #1f1f1f;
+		background: rgb(255 255 255 / 14%);
 		color: #fff;
-		border-color: #4a4a4a;
-		margin-bottom: -1px;
+		border-color: rgb(255 255 255 / 28%);
+		box-shadow: inset 0 1px rgb(255 255 255 / 16%), 0 4px 12px rgb(0 0 0 / 18%);
 	}
 	.top-actions {
 		display: flex;
@@ -191,6 +211,18 @@ App.style = css`
 		margin-left: auto;
 		padding: 0 0.35em;
 		min-height: 28px;
+	}
+	.browser-chrome {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		margin: 6px 8px 6px;
+		border: 1px solid rgb(255 255 255 / 12%);
+		border-radius: 12px;
+		overflow: hidden;
+		background: rgb(20 20 20 / 60%);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+		backdrop-filter: blur(14px);
 	}
 	.tab-panel {
 		flex: 1;
@@ -214,6 +246,135 @@ App.style = css`
 		width: 100%;
 		min-width: 0;
 		min-height: 0;
+	}
+	.password-gate {
+		position: relative;
+		width: 100vw;
+		height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: clamp(72px, 18vh, 155px) 24px 240px;
+		background:
+			radial-gradient(circle at 50% 0%, rgb(255 255 255 / 10%), transparent 42%),
+			linear-gradient(180deg, #101010 0%, #090909 50%, #111 100%);
+		color: #f4f4f4;
+		font-family: Arial, Helvetica, sans-serif;
+		overflow: hidden;
+	}
+	.password-sky {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(circle at 50% 10%, rgb(255 255 255 / 3%) 0%, transparent 28%),
+			linear-gradient(180deg, rgb(255 255 255 / 0%) 0%, rgb(255 255 255 / 2%) 100%);
+	}
+	.password-content {
+		position: relative;
+		z-index: 1;
+		width: min(920px, 100%);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+	.password-content h1 {
+		margin: 0;
+		font-size: clamp(3rem, 8vw, 6.2rem);
+		font-weight: 900;
+		letter-spacing: -0.04em;
+		line-height: 0.98;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+	.password-content p {
+		margin: 14px 0 20px;
+		color: #8d8d8d;
+		font-size: clamp(0.8rem, 1.4vw, 1rem);
+	}
+	.password-moon {
+		position: absolute;
+		top: 34px;
+		right: 7%;
+		width: clamp(54px, 7vw, 92px);
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: #f4f1dc;
+		box-shadow:
+			0 0 18px rgb(244 241 220 / 55%),
+			0 0 48px rgb(244 241 220 / 18%);
+	}
+	.password-moon::after {
+		content: "";
+		position: absolute;
+		top: -8%;
+		right: -8%;
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+		background: #0d0d0d;
+	}
+	.password-star {
+		position: absolute;
+		width: 2px;
+		height: 2px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 0 5px 1px rgb(255 255 255 / 55%);
+	}
+	.password-form {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		width: min(920px, 100%);
+		height: 84px;
+		padding: 0 18px 0 22px;
+		border: 1px solid rgb(255 255 255 / 14%);
+		border-radius: 10px;
+		background: rgb(53 53 53 / 92%);
+		box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+		box-sizing: border-box;
+	}
+	.password-form input,
+	.password-form button {
+		font: inherit;
+		box-sizing: border-box;
+	}
+	.password-form input {
+		flex: 1;
+		height: 100%;
+		padding: 0 16px;
+		border: 0;
+		background: transparent;
+		color: #f0f0f0;
+		font-size: 1rem;
+		text-align: center;
+		outline: none;
+	}
+	.password-form input::placeholder {
+		color: #b8b8b8;
+	}
+	.password-form button {
+		height: 56px;
+		padding: 0 22px;
+		border: 1px solid rgb(255 255 255 / 12%);
+		border-radius: 9px;
+		background: rgb(255 255 255 / 10%);
+		color: #f4f4f4;
+		cursor: pointer;
+		transition: background 120ms ease, border-color 120ms ease;
+	}
+	.password-form button:hover {
+		border-color: rgb(255 255 255 / 26%);
+		background: rgb(255 255 255 / 14%);
+	}
+	.password-error {
+		margin-top: 12px;
+		color: #f2b0b0;
+		font-size: 0.88rem;
 	}
 `;
 export default App;

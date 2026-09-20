@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Scramjet Demo</title>
+		<title>Athom Explorer</title>
 		<style>
 			:root {
 				color-scheme: dark;
+				font-family: Arial, Helvetica, sans-serif;
 			}
 			* {
 				box-sizing: border-box;
@@ -14,155 +15,489 @@
 			body {
 				margin: 0;
 				min-height: 100vh;
-				font-family:
-					system-ui,
-					-apple-system,
-					"Segoe UI",
-					Roboto,
-					"Helvetica Neue",
-					Arial,
-					sans-serif;
-				background: #0f0f0f;
-				color: #e5e7eb;
-				display: grid;
-				place-items: start center;
-				padding: 30px 18px;
+				overflow: hidden;
+				background: #111;
+				color: #f7f7f7;
 			}
-			.sheet {
-				width: min(760px, 100%);
-				/*border: 1px solid #222;
-        background: #111;
-		*/
-				padding: 26px 28px;
+			.page {
+				position: relative;
+				min-height: 100vh;
+				overflow: hidden;
+				isolation: isolate;
+				padding: clamp(72px, 18vh, 155px) 24px 240px;
+				text-align: center;
+			}
+			.content {
+				position: relative;
+				z-index: 5;
+				width: min(920px, 100%);
+				margin: 0 auto;
 			}
 			h1 {
-				margin: 0 0 8px;
-				font-size: 1.55rem;
-				font-weight: 650;
-				letter-spacing: 0.005em;
-			}
-			.meta {
-				color: #9ca3af;
-				font-size: 0.78rem;
-				margin: 0 0 20px;
-			}
-			.section {
-				margin: 0 0 18px;
-			}
-			.label {
-				display: block;
-				margin-bottom: 6px;
-				color: #e5e7eb;
-				font-size: 1.1rem;
-				font-weight: 630;
-				letter-spacing: 0.01em;
-				text-transform: none;
-			}
-			p {
 				margin: 0;
-				color: #c7c7c7;
-				line-height: 1.62;
-				font-size: 0.94rem;
-				max-width: 70ch;
+				font-size: clamp(3rem, 8vw, 6.2rem);
+				font-weight: 900;
+				letter-spacing: -0.04em;
+				line-height: 0.98;
+				white-space: nowrap;
+				text-transform: uppercase;
+				transition:
+					transform 180ms ease,
+					text-shadow 180ms ease;
 			}
-			code {
-				font-family: "SF Mono", Menlo, Consolas, monospace;
-				color: #e5e7eb;
-				background: #181818;
-				border: 1px solid #2a2a2a;
-				padding: 1px 5px;
+			h1:hover {
+				transform: scale(1.035);
+				text-shadow:
+					0 0 8px rgb(255 255 255 / 35%),
+					0 0 24px rgb(255 255 255 / 18%);
 			}
-			a {
-				color: inherit;
-				text-decoration: none;
+			.subtitle {
+				margin: 14px 0 20px;
+				color: #5f5f5f;
+				font-size: clamp(0.8rem, 1.4vw, 1rem);
 			}
-			a:hover {
-				text-decoration: underline;
+			.search {
+				width: min(920px, 100%);
+				height: 84px;
+				padding: 0 28px;
+				border: 1px solid #4a4a4a;
+				border-radius: 9px;
+				background: #353535;
+				box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+				color: #f0f0f0;
+				font: inherit;
+				font-size: 1rem;
+				text-align: center;
+				outline: none;
+			}
+			.search::placeholder {
+				color: #b8b8b8;
+			}
+			.search:focus {
+				border-color: #777;
+				background: #3b3b3b;
+			}
+			.wave,
+			.wave::before,
+			.wave::after {
+				position: absolute;
+				left: -8%;
+				width: 116%;
+				height: 310px;
+				border-radius: 50% 50% 0 0 / 28% 28% 0 0;
+				content: "";
+			}
+			.wave {
+				z-index: 1;
+				bottom: -185px;
+				background: #242424;
+				transform: rotate(-3deg);
+			}
+			.wave::before {
+				bottom: 112px;
+				left: -2%;
+				width: 104%;
+				background: #080808;
+				transform: rotate(5deg);
+			}
+			.wave::after {
+				bottom: 28px;
+				left: 1%;
+				width: 99%;
+				background: #1a1a1a;
+				transform: rotate(-2deg);
+			}
+			.bottom-wave {
+				position: absolute;
+				z-index: 0;
+				bottom: -255px;
+				left: -8%;
+				width: 116%;
+				height: 310px;
+				border-radius: 50% 50% 0 0 / 32% 32% 0 0;
+				background: #666;
+				transform: rotate(4deg);
+			}
+			.moon {
+				position: absolute;
+				top: 42px;
+				right: 7%;
+				z-index: 2;
+				width: clamp(54px, 7vw, 92px);
+				aspect-ratio: 1;
+				border-radius: 50%;
+				background: #f4f1dc;
+				box-shadow:
+					0 0 18px rgb(244 241 220 / 55%),
+					0 0 48px rgb(244 241 220 / 18%);
+			}
+			.moon::after {
+				position: absolute;
+				top: -7%;
+				right: -7%;
+				width: 100%;
+				height: 100%;
+				border-radius: 50%;
+				background: #111;
+				content: "";
+			}
+			.sky {
+				position: absolute;
+				inset: 0 0 34%;
+				z-index: 2;
+				pointer-events: none;
+				overflow: hidden;
+			}
+			.sky-star {
+				position: absolute;
+				width: 2px;
+				height: 2px;
+				border-radius: 50%;
+				background: #fff;
+				box-shadow: 0 0 5px 1px rgb(255 255 255 / 55%);
+			}
+			.comets {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				transform-origin: center;
+			}
+			.comet {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 3px;
+				height: 75vh;
+				background: linear-gradient(#fff, transparent);
+				box-shadow: 0 0 8px rgb(255 255 255 / 45%);
+				transform-origin: top center;
+				animation: comet var(--comet-lifetime, 3s) ease-in-out forwards;
+			}
+			@keyframes comet {
+				0% {
+					opacity: 0;
+					transform: rotate(var(--comet-direction, 0deg)) translateY(var(--comet-distance, 300px)) scaleY(0);
+				}
+				50% {
+					opacity: 1;
+				}
+				100% {
+					opacity: 0;
+					transform: rotate(var(--comet-direction, 0deg)) translateY(0) scaleY(1);
+				}
+			}
+			.comet {
+				transform: rotate(var(--comet-direction, 0deg)) translateY(0) scaleY(1);
+			}
+			.comet-settings-toggle {
+				position: absolute;
+				top: 18px;
+				left: 18px;
+				z-index: 8;
+				padding: 8px 12px;
+				border: 1px solid #444;
+				border-radius: 6px;
+				background: #242424;
+				color: #ddd;
+				font: inherit;
+				font-size: 0.75rem;
+				cursor: pointer;
+			}
+			.comet-settings-toggle:hover {
+				background: #333;
+			}
+			.comet-panel {
+				position: absolute;
+				top: 58px;
+				left: 18px;
+				z-index: 10;
+				width: min(360px, calc(100vw - 36px));
+				padding: 16px;
+				border: 1px solid #4a4a4a;
+				border-radius: 8px;
+				background: rgb(20 20 20 / 96%);
+				box-shadow: 0 12px 35px rgb(0 0 0 / 45%);
+				color: #eee;
+				font-size: 0.78rem;
+			}
+			.comet-panel[hidden] {
+				display: none;
+			}
+			.comet-panel h2 {
+				margin: 0 0 12px;
+				font-size: 0.95rem;
+			}
+			.comet-row {
+				display: grid;
+				grid-template-columns: 1fr 80px 80px;
+				gap: 6px;
+				align-items: center;
+				margin: 8px 0;
+			}
+			.comet-row label {
+				grid-column: 1 / -1;
+				color: #bbb;
+			}
+			.comet-row select,
+			.comet-row input {
+				width: 100%;
+				min-width: 0;
+				padding: 6px;
+				border: 1px solid #444;
+				border-radius: 4px;
+				background: #2b2b2b;
+				color: #eee;
+				font: inherit;
+			}
+			.comet-row input:disabled {
+				color: #777;
+			}
+			.comet-panel-actions {
+				display: flex;
+				justify-content: flex-end;
+				gap: 8px;
+				margin-top: 14px;
+			}
+			.comet-panel-actions button {
+				padding: 7px 10px;
+				border: 1px solid #555;
+				border-radius: 4px;
+				background: #303030;
+				color: #eee;
+				cursor: pointer;
+			}
+			@media (max-width: 600px) {
+				.page {
+					padding-top: 120px;
+				}
+				h1 {
+					font-size: 3rem;
+				}
+				.search {
+					height: 64px;
+				}
 			}
 		</style>
 	</head>
 	<body>
-		<main class="sheet">
-			<h1>Welcome to Scramjet!</h1>
-			<p class="meta">
-				Version {{SCRAMJET_VERSION}} |
-				<a
-					href="https://github.com/MercuryWorkshop/scramjet/commit/{{SCRAMJET_BUILD}}"
-					target="_blank"
-					>Build {{SCRAMJET_BUILD}}</a
-				>
-				| Updated {{SCRAMJET_DATE_PRETTY}}
-			</p>
-
-			<section class="section">
-				<p>
-					<a href="https://github.com/MercuryWorkshop/scramjet" target="_blank"
-						><strong>Scramjet</strong></a
-					>
-					is an experimental <strong>interception-based web proxy</strong>,
-					designed to evade internet censorship and bypass arbitrary browser
-					restrictions.<br /><br />
-					Scramjet allows you to sandbox arbitrary web content, bypass CORS
-					restrictions on loading websites, and instrument and debug websites
-					inside the browser itself. This is accomplished through a combination
-					of interception, rewriting, and sandboxing techniques. You can learn
-					more about the technical details
-					<a
-						href="https://developer.puter.com/blog/how-I-ported-the-web-to-the-web/"
-						target="_blank"
-						><strong>here</strong></a
-					>.<br /><br />
-					If you're interested in contributing to scramjet, or want to build
-					your own web proxy or application using it, you should check out the
-					<a href="https://github.com/MercuryWorkshop/scramjet" target="_blank"
-						><strong>GitHub repository</strong></a
-					>.<br /><br />
-					This website is a demo of scramjet's capabilities, letting you browse
-					the web proxied through scramjet, inspect how scramjet rewrites
-					requests and responses, and see how scramjet handles your custom
-					content in the playground.
-				</p>
+		<main class="page">
+			<div class="content">
+				<h1>Athom Explorer</h1>
+				<p class="subtitle">Un explorateur conçu pour travailler sur mes projets.</p>
+				<form id="search-form">
+					<input id="search-input" class="search" type="text" placeholder="Recherchez ou saisissez une URL" aria-label="Rechercher ou saisir une URL" />
+				</form>
+			</div>
+			<button id="comet-settings-toggle" class="comet-settings-toggle" type="button">
+				Paramètres comètes
+			</button>
+			<section id="comet-panel" class="comet-panel" hidden>
+				<h2>Contrôles des comètes</h2>
+				<div class="comet-row" data-setting="direction">
+					<label>Direction (degrés)</label>
+					<select class="setting-mode">
+						<option value="random">Aléatoire</option>
+						<option value="fixed">Fixe</option>
+					</select>
+					<input class="setting-min" type="number" value="-25" />
+					<input class="setting-max" type="number" value="25" />
+				</div>
+				<div class="comet-row" data-setting="speed">
+					<label>Vitesse (px/s)</label>
+					<select class="setting-mode">
+						<option value="random">Aléatoire</option>
+						<option value="fixed">Fixe</option>
+					</select>
+					<input class="setting-min" type="number" min="1" value="120" />
+					<input class="setting-max" type="number" min="1" value="220" />
+				</div>
+				<div class="comet-row" data-setting="lifetime">
+					<label>Temps avant disparition (s)</label>
+					<select class="setting-mode">
+						<option value="random">Aléatoire</option>
+						<option value="fixed">Fixe</option>
+					</select>
+					<input class="setting-min" type="number" min="0.2" step="0.1" value="2" />
+					<input class="setting-max" type="number" min="0.2" step="0.1" value="4" />
+				</div>
+				<div class="comet-row" data-setting="interval">
+					<label>Temps entre les salves (s)</label>
+					<select class="setting-mode">
+						<option value="random">Aléatoire</option>
+						<option value="fixed">Fixe</option>
+					</select>
+					<input class="setting-min" type="number" min="0.1" step="0.1" value="1.5" />
+					<input class="setting-max" type="number" min="0.1" step="0.1" value="3" />
+				</div>
+				<div class="comet-row" data-setting="burst">
+					<label>Comètes par salve</label>
+					<select class="setting-mode">
+						<option value="random">Aléatoire</option>
+						<option value="fixed">Fixe</option>
+					</select>
+					<input class="setting-min" type="number" min="1" step="1" value="1" />
+					<input class="setting-max" type="number" min="1" step="1" value="3" />
+				</div>
+				<div class="comet-panel-actions">
+					<button id="comet-settings-close" type="button">Fermer</button>
+					<button id="comet-settings-apply" type="button">Appliquer</button>
+				</div>
 			</section>
-
-			<section class="section">
-				<span class="label">Browser</span>
-				<p>
-					Try entering a URL in the box above to browse the web proxied through
-					scramjet.<br />
-					All traffic sent through scramjet is
-					<strong>fully end-to-end encrypted</strong> with TLS, powered by
-					<a href="https://github.com/ading2210/libcurl.js" target="_blank"
-						><strong>libcurl.js</strong></a
-					>
-					and the
-					<a
-						href="https://github.com/MercuryWorkshop/wisp-protocol"
-						target="_blank"
-						><strong>wisp protocol</strong></a
-					>.
-				</p>
-			</section>
-
-			<section class="section">
-				<span class="label">Requests</span>
-				<p>
-					You can inspect all the requests sent through scramjet, and what
-					transformations are applied in the requests tab.<br />
-					Note that requests will not be captured until you first click on the
-					requests tab.
-				</p>
-			</section>
-
-			<section class="section">
-				<span class="label">Playground</span>
-				<p>
-					The playground lets you write your own html/css/js snippets which will
-					be run inside the scramjet sandbox. Your files are "served" by
-					scramjet from a fake origin, which can be configured to be any URL.
-					Notice that if you add a <code>console.log(location.href)</code> in
-					your code, the page will really be running on the fake origin.
-				</p>
-			</section>
+			<div class="moon" aria-hidden="true"></div>
+			<div id="sky" class="sky" aria-hidden="true">
+				<div id="comets" class="comets"></div>
+			</div>
+			<div class="wave" aria-hidden="true"></div>
+			<div class="bottom-wave" aria-hidden="true"></div>
 		</main>
+		<script>
+			const sky = document.getElementById("sky");
+			for (let index = 0; index < 200; index++) {
+				const star = document.createElement("span");
+				star.className = "sky-star";
+				star.style.top = `${Math.random() * 100}%`;
+				star.style.left = `${Math.random() * 100}%`;
+				star.style.opacity = `${0.35 + Math.random() * 0.65}`;
+				sky.appendChild(star);
+			}
+
+			const comets = document.getElementById("comets");
+			const cometSettings = {
+				direction: { mode: "random", min: -25, max: 25 },
+				speed: { mode: "random", min: 120, max: 220 },
+				lifetime: { mode: "random", min: 2, max: 4 },
+				interval: { mode: "random", min: 1.5, max: 3 },
+				burst: { mode: "random", min: 1, max: 3 },
+			};
+			let salvoTimer;
+
+			const valueFromSetting = (setting) => {
+				if (setting.mode === "fixed") return setting.min;
+				return setting.min + Math.random() * (setting.max - setting.min);
+			};
+
+			const createComet = () => {
+				if (comets.children.length > 100) comets.children[0].remove();
+
+				const comet = document.createElement("div");
+				comet.className = "comet";
+				const lifetime = Math.max(0.2, valueFromSetting(cometSettings.lifetime));
+				const speed = Math.max(1, valueFromSetting(cometSettings.speed));
+				const direction = valueFromSetting(cometSettings.direction);
+				comet.style.setProperty("--comet-lifetime", `${lifetime}s`);
+				comet.style.setProperty("--comet-direction", `${direction}deg`);
+				comet.style.setProperty("--comet-distance", `${speed * lifetime}px`);
+				comet.style.left = `${Math.round(Math.random() * comets.clientWidth)}px`;
+				comet.style.top = `${Math.round(Math.random() * comets.clientHeight)}px`;
+				comets.append(comet);
+			};
+
+			const createSalvo = () => {
+				const count = Math.max(1, Math.round(valueFromSetting(cometSettings.burst)));
+				for (let index = 0; index < count; index++) createComet();
+			};
+
+			const scheduleSalvo = () => {
+				const delay = Math.max(0.1, valueFromSetting(cometSettings.interval)) * 1000;
+				salvoTimer = setTimeout(() => {
+					createSalvo();
+					scheduleSalvo();
+				}, delay);
+			};
+
+			const cometPanel = document.getElementById("comet-panel");
+			const updateModeInputs = (row) => {
+				const mode = row.querySelector(".setting-mode").value;
+				row.querySelector(".setting-max").disabled = mode === "fixed";
+			};
+			const updatePanelFromSettings = () => {
+				document.querySelectorAll(".comet-row").forEach((row) => {
+					const setting = cometSettings[row.dataset.setting];
+					if (!setting) return;
+					row.querySelector(".setting-mode").value = setting.mode;
+					row.querySelector(".setting-min").value = setting.min;
+					row.querySelector(".setting-max").value = setting.max;
+					updateModeInputs(row);
+				});
+			};
+			const updateSettingsFromParent = (settings) => {
+				if (!settings || typeof settings !== "object") return;
+				for (const name of Object.keys(cometSettings)) {
+					const saved = settings[name];
+					if (!saved || !["fixed", "random"].includes(saved.mode)) continue;
+					const min = Number(saved.min);
+					const max = Number(saved.max);
+					if (!Number.isFinite(min) || !Number.isFinite(max)) continue;
+					cometSettings[name] = {
+						mode: saved.mode,
+						min: Math.min(min, max),
+						max: Math.max(min, max),
+					};
+				}
+				updatePanelFromSettings();
+				clearTimeout(salvoTimer);
+				scheduleSalvo();
+			};
+			document.querySelectorAll(".comet-row").forEach((row) => {
+				row.querySelector(".setting-mode").addEventListener("change", () => {
+					updateModeInputs(row);
+				});
+				updateModeInputs(row);
+			});
+
+			document.getElementById("comet-settings-toggle").addEventListener("click", () => {
+				cometPanel.hidden = !cometPanel.hidden;
+			});
+			document.getElementById("comet-settings-close").addEventListener("click", () => {
+				cometPanel.hidden = true;
+			});
+			document.getElementById("comet-settings-apply").addEventListener("click", () => {
+				document.querySelectorAll(".comet-row").forEach((row) => {
+					const name = row.dataset.setting;
+					const min = Number(row.querySelector(".setting-min").value);
+					const max = Number(row.querySelector(".setting-max").value);
+					if (!name || !Number.isFinite(min) || !Number.isFinite(max)) return;
+					cometSettings[name].mode = row.querySelector(".setting-mode").value;
+					cometSettings[name].min = Math.min(min, max);
+					cometSettings[name].max = Math.max(min, max);
+				});
+				window.parent.postMessage(
+					{ type: "scramjet-comet-settings-save", settings: cometSettings },
+					"*"
+				);
+				clearTimeout(salvoTimer);
+				scheduleSalvo();
+				cometPanel.hidden = true;
+			});
+
+			createSalvo();
+			scheduleSalvo();
+			window.addEventListener("message", (event) => {
+				if (event.data?.type === "scramjet-comet-settings-load") {
+					updateSettingsFromParent(event.data.settings);
+				}
+			});
+			window.parent.postMessage(
+				{ type: "scramjet-comet-settings-load-request" },
+				"*"
+			);
+
+			document.getElementById("search-form").addEventListener("submit", (event) => {
+				event.preventDefault();
+				const input = document.getElementById("search-input");
+				const value = input.value.trim();
+				if (!value) return;
+
+				const isUrl = /^(https?:\/\/|www\.)/i.test(value) ||
+					/^[a-z0-9-]+(\.[a-z0-9-]+)+([/?#].*)?$/i.test(value);
+				const target = isUrl
+					? (/^https?:\/\//i.test(value) ? value : `https://${value}`)
+					: `https://www.google.com/search?q=${encodeURIComponent(value)}`;
+
+				window.parent.postMessage({ type: "scramjet-home-search", url: target }, "*");
+			});
+		</script>
 	</body>
 </html>

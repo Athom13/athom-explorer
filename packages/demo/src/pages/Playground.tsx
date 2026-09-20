@@ -4,12 +4,13 @@ import {
 	BareResponse,
 	Plugin,
 	rewriteUrl,
-	ScramjetFetchHandler,
 	ScramjetHeaders,
-	type ScramjetFetchRequest,
 } from "@mercuryworkshop/scramjet";
-import { cachePlugin, controller } from "..";
+import * as Scramjet from "@mercuryworkshop/scramjet";
+import { controller } from "..";
 import Monaco from "../components/Monaco";
+
+const ScramjetFetchHandler = (Scramjet as any).ScramjetFetchHandler;
 
 const DEFAULT_ORIGIN = "https://fakeorigin.com";
 const DEFAULT_PREVIEW_URL = `${DEFAULT_ORIGIN}/`;
@@ -418,7 +419,7 @@ const PlaygroundView: Component<
 		if (path.endsWith(".js") || path.endsWith(".mjs")) return "script";
 		if (path.endsWith(".css")) return "style";
 		if (path.endsWith(".html")) return "document";
-		return "empty";
+		return "";
 	};
 
 	const isScriptFile = (path: string) =>
@@ -496,9 +497,7 @@ const PlaygroundView: Component<
 				clientId: frame.id,
 			};
 
-			const rewritten = await handler.handleFetch(
-				request as ScramjetFetchRequest
-			);
+			const rewritten = await handler.handleFetch(request);
 			handler.client.fetch = originalFetch;
 
 			this.rewrittenBody = await readBodyText(rewritten.body);
@@ -532,7 +531,7 @@ const PlaygroundView: Component<
 		>
 			{activeSignal.map(() => null)}
 			<div class="editor-column">
-				<div class="section-title">Files</div>
+				<div class="section-title">Fichiers</div>
 				<div class="editor-layout">
 					<div class="file-tree">
 						{use(this.projects, this.selectedProjectId, this.selectedFile).map(
@@ -569,7 +568,7 @@ const PlaygroundView: Component<
 																		e.preventDefault();
 																		e.stopPropagation();
 																		const next = normalizeFilePath(
-																			prompt("Rename file", path) || ""
+																			prompt("Renommer le fichier", path) || ""
 																		);
 																		if (!next || next === path || next in files)
 																			return;
@@ -583,7 +582,7 @@ const PlaygroundView: Component<
 																		if (this.selectedFile === path)
 																			this.selectedFile = next;
 																	}}
-																	title="Rename file"
+																			title="Renommer le fichier"
 																>
 																	<span class="material-symbols-outlined">
 																		edit
@@ -610,7 +609,7 @@ const PlaygroundView: Component<
 																				remaining[0] ?? "/index.html";
 																		}
 																	}}
-																	title="Delete file"
+																			title="Supprimer le fichier"
 																>
 																	<span class="material-symbols-outlined">
 																		delete
@@ -624,7 +623,7 @@ const PlaygroundView: Component<
 												class="file-item file-new"
 												on:click={() => {
 													const next = normalizeFilePath(
-														prompt("New file path", "/new-file.txt") || ""
+															prompt("Chemin du nouveau fichier", "/nouveau-fichier.txt") || ""
 													);
 													if (!next || next in files) return;
 													updateActiveFiles((current) => ({
@@ -634,19 +633,19 @@ const PlaygroundView: Component<
 													this.selectedFile = next;
 												}}
 											>
-												+ New file
+																		+ Nouveau fichier
 											</button>
 										</div>
 										<div class="tree-split-bar" />
 										<div class="tree-section projects-shelf">
 											<div class="tree-title-row">
-												<span class="tree-title">Projects</span>
+												<span class="tree-title">Projets</span>
 												<button
 													type="button"
 													class="project-header-action"
 													on:click={() => {
 														const name = (
-															prompt("Project name", "New Project") || ""
+																	prompt("Nom du projet", "Nouveau projet") || ""
 														).trim();
 														if (!name) return;
 														const id = `project-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -659,7 +658,7 @@ const PlaygroundView: Component<
 														this.selectedProjectId = id;
 														this.selectedFile = "/index.html";
 													}}
-													title="Create project"
+																		title="Créer un projet"
 												>
 													<span class="material-symbols-outlined">add</span>
 												</button>
@@ -690,7 +689,7 @@ const PlaygroundView: Component<
 																e.preventDefault();
 																e.stopPropagation();
 																const next = (
-																	prompt("Rename project", project.name) || ""
+																		prompt("Renommer le projet", project.name) || ""
 																).trim();
 																if (!next || next === project.name) return;
 																updateProjects((current) =>
@@ -701,7 +700,7 @@ const PlaygroundView: Component<
 																	)
 																);
 															}}
-															title="Rename project"
+																		title="Renommer le projet"
 														>
 															<span class="material-symbols-outlined">
 																edit
@@ -733,7 +732,7 @@ const PlaygroundView: Component<
 																		"/index.html";
 																}
 															}}
-															title="Delete project"
+																		title="Supprimer le projet"
 														>
 															<span class="material-symbols-outlined">
 																delete
@@ -800,7 +799,7 @@ const PlaygroundView: Component<
 							this.previewMode = "iframe";
 						}}
 					>
-						Preview
+						Aperçu
 					</button>
 					<button
 						type="button"
@@ -812,7 +811,7 @@ const PlaygroundView: Component<
 							runRewrite(this.frame);
 						}}
 					>
-						Rewritten
+						Réécrit
 					</button>
 				</div>
 				{use(this.previewMode)
@@ -850,7 +849,7 @@ const PlaygroundView: Component<
 									on:input={(e: InputEvent) => {
 										this.previewUrlInput = (e.target as HTMLInputElement).value;
 									}}
-									placeholder="Enter URL or search..."
+													placeholder="Saisissez une URL ou recherchez..."
 								/>
 							</div>
 						</form>
@@ -884,7 +883,7 @@ const PlaygroundView: Component<
 								type="button"
 								class="rewrite-refresh"
 								on:click={() => runRewrite(this.frame)}
-								title="Re-run rewrite"
+												title="Relancer la réécriture"
 							>
 								<span class="material-symbols-outlined">refresh</span>
 							</button>
@@ -943,7 +942,7 @@ const PlaygroundView: Component<
 					}}
 				>
 					<div class="origin-shell">
-						<span class="origin-prefix">Fake origin</span>
+						<span class="origin-prefix">Origine simulée</span>
 						<input
 							type="text"
 							value={use(this.originInput)}
@@ -1002,9 +1001,11 @@ PlaygroundView.style = css`
 		gap: 0;
 		overflow: hidden;
 		padding: 0;
-		border-radius: 0;
-		border: 1px solid #222;
-		background: #0f0f0f;
+		border-radius: 14px;
+		border: 1px solid rgb(255 255 255 / 14%);
+		background: rgb(255 255 255 / 5%);
+		box-shadow: 0 10px 28px rgb(0 0 0 / 22%);
+		backdrop-filter: blur(14px);
 		position: relative;
 	}
 	.playground-view.resizing {
@@ -1046,7 +1047,7 @@ PlaygroundView.style = css`
 	}
 	.editor-column,
 	.preview-column {
-		background: transparent;
+		background: rgb(0 0 0 / 12%);
 		border: 0;
 		border-radius: 0;
 		padding: 0;
@@ -1054,7 +1055,7 @@ PlaygroundView.style = css`
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		box-shadow: none;
+		box-shadow: inset 0 1px rgb(255 255 255 / 5%);
 	}
 	.editor-column {
 		flex: 0 0 var(--editor-pct, 58%);
@@ -1073,7 +1074,7 @@ PlaygroundView.style = css`
 		font-weight: 600;
 		padding: 0.7em 0.9em;
 		border-bottom: 1px solid #222;
-		background: #111;
+		background: rgb(255 255 255 / 5%);
 	}
 	.editor-layout {
 		display: grid;
@@ -1086,7 +1087,7 @@ PlaygroundView.style = css`
 	.file-tree {
 		border-right: 1px solid #222;
 		border-radius: 0;
-		background: #111;
+		background: rgb(0 0 0 / 14%);
 		padding: 0.35em 0.3em;
 		overflow: hidden;
 		min-height: 0;

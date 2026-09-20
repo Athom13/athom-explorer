@@ -1,7 +1,6 @@
 import {
 	css,
 	type Component,
-	type Delegate,
 	createState,
 } from "dreamland/core";
 import {
@@ -365,7 +364,7 @@ const HeadersTable: Component<
 		<div class="headers-table">
 			{use(this.headers).map((headers) =>
 				(headers ?? []).length === 0 ? (
-					<div class="headers-empty">(none)</div>
+					<div class="headers-empty">(aucun)</div>
 				) : (
 					(headers ?? []).map(([key, value]) => (
 						<div class="header-row">
@@ -792,7 +791,7 @@ const RequestViewer: Component<
 		(selected) => !!selected && isMediaContentType(selected.contentType)
 	);
 	const responseBodyEmptyMessage = responseBodyIsMedia.map((isMedia) =>
-		isMedia ? "(media not captured)" : "(empty)"
+		isMedia ? "(média non capturé)" : "(vide)"
 	);
 	const responseBodyMediaKind = use(this.selectedRequest).map((selected) => {
 		if (!selected || !isMediaContentType(selected.contentType)) return "none";
@@ -875,7 +874,7 @@ const RequestViewer: Component<
 				) {
 					preBodyInfo = {
 						preview: shouldCaptureStreamBodies()
-							? "(pre-rewrite stream preview unavailable)"
+							? "(aperçu du flux avant réécriture indisponible)"
 							: "(stream capture disabled)",
 					};
 				} else {
@@ -1010,17 +1009,17 @@ const RequestViewer: Component<
 			{activeSignal.map(() => null)}
 			<div class="requests-header">
 				<span>
-					Requests, oldest to newest (latest{" "}
+					Requêtes, de la plus ancienne à la plus récente (maximum{" "}
 					{use(demoSettingsStore.maxRequests).map((max) => max)})
 				</span>
 				<button class="tab-action" on:click={clear}>
-					Clear
+					Effacer
 				</button>
 			</div>
 			<div class="requests-toolbar">
 				<input
 					class="requests-search"
-					placeholder="Search requests"
+					placeholder="Rechercher dans les requêtes"
 					value={use(this.search)}
 					on:input={(e: InputEvent) => {
 						this.search = (e.target as HTMLInputElement).value;
@@ -1034,7 +1033,7 @@ const RequestViewer: Component<
 							this.captureStreamBodies = (e.target as HTMLInputElement).checked;
 						}}
 					/>
-					<span>Capture post-rewrite stream bodies</span>
+					<span>Capturer les flux après réécriture</span>
 				</label>
 			</div>
 			<div class="requests-content">
@@ -1062,8 +1061,8 @@ const RequestViewer: Component<
 								return (
 									<div class="requests-empty">
 										{requests.length === 0
-											? "No requests captured yet."
-											: "No requests match your search."}
+											? "Aucune requête capturée pour le moment."
+											: "Aucune requête ne correspond à votre recherche."}
 									</div>
 								);
 							}
@@ -1086,7 +1085,7 @@ const RequestViewer: Component<
 							(hasSelected) => `requests-empty ${hasSelected ? "hidden" : ""}`
 						)}
 					>
-						Select a request to see details.
+						Sélectionnez une requête pour afficher ses détails.
 					</div>
 					<div
 						class={hasSelected.map(
@@ -1094,23 +1093,23 @@ const RequestViewer: Component<
 						)}
 					>
 						<details class="detail-section" open>
-							<summary>General</summary>
+							<summary>Général</summary>
 							<div class="detail-body">
 								<div class="detail-meta-table">
 									<div class="detail-meta-row">
-										<span class="detail-meta-key">Request URL</span>
+										<span class="detail-meta-key">URL de la requête</span>
 										<span class="detail-meta-value">{selectedUrl}</span>
 									</div>
 									<div class="detail-meta-row">
-										<span class="detail-meta-key">Request Method</span>
+										<span class="detail-meta-key">Méthode</span>
 										<span class="detail-meta-value">{selectedMethod}</span>
 									</div>
 									<div class="detail-meta-row">
-										<span class="detail-meta-key">Status Code</span>
+										<span class="detail-meta-key">Code de statut</span>
 										<span class="detail-meta-value">{selectedStatus}</span>
 									</div>
 									<div class="detail-meta-row">
-										<span class="detail-meta-key">Duration</span>
+										<span class="detail-meta-key">Durée</span>
 										<span class="detail-meta-value">{selectedDuration}</span>
 									</div>
 									<div class="detail-meta-row">
@@ -1122,14 +1121,14 @@ const RequestViewer: Component<
 										<span class="detail-meta-value">{selectedMode}</span>
 									</div>
 									<div class="detail-meta-row">
-										<span class="detail-meta-key">Content Type</span>
+										<span class="detail-meta-key">Type de contenu</span>
 										<span class="detail-meta-value">{selectedContentType}</span>
 									</div>
 								</div>
 							</div>
 						</details>
 						<details class="detail-section" open>
-							<summary>Response Headers</summary>
+							<summary>En-têtes de réponse</summary>
 							<div class="detail-body">
 								<div class="detail-toggle">
 									<button
@@ -1143,7 +1142,7 @@ const RequestViewer: Component<
 											this.responseHeadersView = "post";
 										}}
 									>
-										Post-rewrite
+										Après réécriture
 									</button>
 									<button
 										class={use(this.responseHeadersView).map(
@@ -1156,7 +1155,7 @@ const RequestViewer: Component<
 											this.responseHeadersView = "pre";
 										}}
 									>
-										Pre-rewrite
+										Avant réécriture
 									</button>
 								</div>
 								<div class="detail-block">
@@ -1165,7 +1164,7 @@ const RequestViewer: Component<
 							</div>
 						</details>
 						<details class="detail-section" open>
-							<summary>Request Headers</summary>
+							<summary>En-têtes de requête</summary>
 							<div class="detail-body">
 								<div class="detail-toggle">
 									<button
@@ -1179,7 +1178,7 @@ const RequestViewer: Component<
 											this.requestHeadersView = "post";
 										}}
 									>
-										Post-rewrite
+										Après réécriture
 									</button>
 									<button
 										class={use(this.requestHeadersView).map(
@@ -1192,7 +1191,7 @@ const RequestViewer: Component<
 											this.requestHeadersView = "pre";
 										}}
 									>
-										Pre-rewrite
+										Avant réécriture
 									</button>
 								</div>
 								<div class="detail-block">
@@ -1201,7 +1200,7 @@ const RequestViewer: Component<
 							</div>
 						</details>
 						<details class="detail-section" open>
-							<summary>Response Body</summary>
+							<summary>Corps de la réponse</summary>
 							<div class="detail-body">
 								<div class="detail-toggle">
 									<button
@@ -1215,7 +1214,7 @@ const RequestViewer: Component<
 											this.responseBodyView = "post";
 										}}
 									>
-										Post-rewrite
+										Après réécriture
 									</button>
 									<button
 										class={use(this.responseBodyView).map(
@@ -1228,7 +1227,7 @@ const RequestViewer: Component<
 											this.responseBodyView = "pre";
 										}}
 									>
-										Pre-rewrite
+										Avant réécriture
 									</button>
 								</div>
 								<StableBodyViewer
@@ -1243,12 +1242,12 @@ const RequestViewer: Component<
 						{showRequestBody.map((showRequestBody) =>
 							showRequestBody ? (
 								<details class="detail-section" open>
-									<summary>Request Body</summary>
+											<summary>Corps de la requête</summary>
 									<div class="detail-body">
 										<StableBodyViewer
 											value={requestBodyValue}
 											language={requestBodyLanguage}
-											emptyMessage="(empty)"
+											emptyMessage="(vide)"
 											mediaKind="none"
 										/>
 									</div>
@@ -1283,10 +1282,12 @@ RequestViewer.style = css`
 		flex-direction: column;
 		flex: 1;
 		min-height: 0;
-		background: #0f0f0f;
-		border: 1px solid #222;
-		border-radius: 0;
+		background: rgb(255 255 255 / 5%);
+		border: 1px solid rgb(255 255 255 / 14%);
+		border-radius: 14px;
 		padding: 0.5em;
+		box-shadow: 0 10px 28px rgb(0 0 0 / 22%);
+		backdrop-filter: blur(14px);
 		color: #e5e5e5;
 		font-family:
 			system-ui,
@@ -1313,8 +1314,8 @@ RequestViewer.style = css`
 	}
 	.requests-search {
 		flex: 1;
-		background: #121212;
-		border: 1px solid #2a2a2a;
+		background: rgb(255 255 255 / 6%);
+		border: 1px solid rgb(255 255 255 / 14%);
 		color: #e5e7eb;
 		padding: 0.45em 0.65em;
 		border-radius: 8px;
@@ -1354,8 +1355,8 @@ RequestViewer.style = css`
 		flex-direction: column;
 		gap: 0.5em;
 		overflow: auto;
-		background: #111;
-		border: 1px solid #222;
+		background: rgb(0 0 0 / 18%);
+		border: 1px solid rgb(255 255 255 / 10%);
 		border-radius: 8px;
 		padding: 0.75em;
 	}

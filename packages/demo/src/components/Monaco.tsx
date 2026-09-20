@@ -88,10 +88,10 @@ Monaco.style = css`
 		min-height: 200px;
 		height: auto;
 		flex: 0 0 auto;
-		border-radius: 0;
+		border-radius: 10px;
 		overflow: hidden;
-		border: 0;
-		background: #111;
+		border: 1px solid rgb(255 255 255 / 10%);
+		background: rgb(0 0 0 / 18%);
 	}
 	:scope.fill {
 		flex: 1;
