@@ -21,12 +21,19 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @mercuryworkshop/scramjet run rewriter:build
 RUN pnpm --filter @mercuryworkshop/scramjet run build
+
+ARG VITE_WISP_URL=wss://anura.pro
+ENV VITE_WISP_URL=${VITE_WISP_URL}
 RUN pnpm --filter @mercuryworkshop/scramjet-demo build
 
+FROM node:22-slim AS runtime
+WORKDIR /app
+COPY --from=0 /app/packages/demo/dist ./dist
+COPY --from=0 /app/auth-server.ts ./auth-server.ts
+COPY --from=0 /app/production-server.ts ./production-server.ts
+
 ENV SCRAMJET_AUTH_FILE=/data/.scramjet-auth.json
+ENV DIST_DIR=/app/dist
 VOLUME ["/data"]
-
-EXPOSE 4141 4142
-
-# The dev server also starts Wisp and applies the authentication middleware.
-CMD ["pnpm", "dev"]
+EXPOSE 4141
+CMD ["node", "--no-warnings=ExperimentalWarning", "production-server.ts"]
