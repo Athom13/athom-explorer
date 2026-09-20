@@ -3,6 +3,7 @@ import { controller, getTransport } from "..";
 import {
 	AVAILABLE_TRANSPORTS,
 	type AvailableTransports,
+	DEFAULT_WISP_SERVERS,
 	demoSettingsDefaults,
 	demoSettingsStore,
 	normalizeHomeUrl,
@@ -19,6 +20,8 @@ const SettingsView: Component<
 	{},
 	{
 		wispUrlInput: string;
+		wispServersInput: string[];
+		newWispServerInput: string;
 		transportInput: AvailableTransports;
 		homeUrlInput: string;
 		maxRequestsInput: string;
@@ -36,6 +39,10 @@ const SettingsView: Component<
 	{}
 > = function () {
 	this.wispUrlInput ??= demoSettingsStore.wispUrl;
+	this.wispServersInput ??= [...(demoSettingsStore.wispServers || DEFAULT_WISP_SERVERS), demoSettingsStore.wispUrl].filter(
+		(url, index, list) => list.indexOf(url) === index
+	);
+	this.newWispServerInput ??= "";
 	this.transportInput ??= demoSettingsStore.transport;
 	this.homeUrlInput ??= demoSettingsStore.homeUrl;
 	this.maxRequestsInput ??= String(demoSettingsStore.maxRequests);
@@ -56,6 +63,7 @@ const SettingsView: Component<
 
 	const syncInputsFromStore = () => {
 		this.wispUrlInput = demoSettingsStore.wispUrl;
+		this.wispServersInput = [...(demoSettingsStore.wispServers || DEFAULT_WISP_SERVERS)];
 		this.transportInput = demoSettingsStore.transport;
 		this.homeUrlInput = demoSettingsStore.homeUrl;
 		this.maxRequestsInput = String(demoSettingsStore.maxRequests);
@@ -143,6 +151,8 @@ const SettingsView: Component<
 			demoSettingsStore.customIconUrl = nextCustomIconUrl;
 
 			this.wispUrlInput = nextWispUrl;
+			this.wispServersInput = this.wispServersInput.map(normalizeWispUrl);
+			demoSettingsStore.wispServers = this.wispServersInput;
 			this.transportInput = nextTransport;
 			this.homeUrlInput = nextHomeUrl;
 			this.maxRequestsInput = String(nextMaxRequests);
@@ -171,6 +181,8 @@ const SettingsView: Component<
 		this.error = "";
 		this.status = "Réinitialisation des paramètres...";
 		this.wispUrlInput = demoSettingsDefaults.wispUrl;
+		this.wispServersInput = [...demoSettingsDefaults.wispServers];
+		this.newWispServerInput = "";
 		this.transportInput = demoSettingsDefaults.transport;
 		this.homeUrlInput = demoSettingsDefaults.homeUrl;
 		this.maxRequestsInput = String(demoSettingsDefaults.maxRequests);
@@ -180,6 +192,30 @@ const SettingsView: Component<
 		this.customTabNameInput = demoSettingsDefaults.customTabName;
 		this.customIconUrlInput = demoSettingsDefaults.customIconUrl;
 		await applySettings();
+	};
+
+	const addWispServer = () => {
+		try {
+			const server = normalizeWispUrl(this.newWispServerInput);
+			if (!this.wispServersInput.includes(server)) this.wispServersInput = [...this.wispServersInput, server];
+			this.wispUrlInput = server;
+			this.newWispServerInput = "";
+			this.error = "";
+		} catch (error) {
+			this.error = error instanceof Error ? error.message : "Adresse Wisp invalide.";
+		}
+	};
+
+	const removeWispServer = () => {
+		if (this.wispServersInput.length <= 1) {
+			this.error = "Vous devez conserver au moins un serveur Wisp.";
+			return;
+		}
+		const index = this.wispServersInput.indexOf(this.wispUrlInput);
+		const nextServers = this.wispServersInput.filter((server) => server !== this.wispUrlInput);
+		this.wispServersInput = nextServers;
+		this.wispUrlInput = nextServers[Math.max(0, Math.min(index, nextServers.length - 1))];
+		this.error = "";
 	};
 
 	return (
@@ -194,15 +230,30 @@ const SettingsView: Component<
 
 			<label class="field">
 					<span class="label">Serveur Wisp</span>
-				<input
-					type="text"
+				<select
 					value={use(this.wispUrlInput)}
-					spellcheck={false}
-					on:input={(e: InputEvent) => {
-						this.wispUrlInput = (e.target as HTMLInputElement).value;
+					on:change={(e: Event) => {
+						this.wispUrlInput = (e.target as HTMLSelectElement).value;
 					}}
-				/>
-				<span class="hint">Exemple : ws://localhost:4142/</span>
+				>
+					{use(this.wispServersInput).map((server) => (
+						<option value={server}>{server}</option>
+					))}
+				</select>
+				<div class="inline-field">
+					<input
+						type="url"
+						value={use(this.newWispServerInput)}
+						placeholder="wss://mon-serveur.example/"
+						spellcheck={false}
+						on:input={(e: InputEvent) => {
+							this.newWispServerInput = (e.target as HTMLInputElement).value;
+						}}
+					/>
+					<button type="button" on:click={addWispServer}>Ajouter</button>
+					<button type="button" class="secondary" on:click={removeWispServer}>Supprimer</button>
+				</div>
+				<span class="hint">Sélectionnez un serveur, ajoutez une adresse ou supprimez l’adresse sélectionnée.</span>
 			</label>
 
 			<label class="field">
@@ -444,6 +495,22 @@ SettingsView.style = css`
 		gap: 6px;
 		margin-bottom: 14px;
 		max-width: 720px;
+	}
+
+	.inline-field {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+	}
+
+	.inline-field input {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.inline-field button {
+		flex: 0 0 auto;
+		white-space: nowrap;
 	}
 
 	.checkbox-field {

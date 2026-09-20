@@ -10,6 +10,12 @@ export const AVAILABLE_TRANSPORTS: ReadonlyArray<{
 	{ value: "epoxy", label: "Epoxy" },
 ];
 const DEFAULT_WISP_URL = import.meta.env.VITE_WISP_URL || "wss://anura.pro";
+export const DEFAULT_WISP_SERVERS = [
+	DEFAULT_WISP_URL,
+	"wss://aaa-hurricane-tuner-volunteers.trycloudflare.com/",
+	"wss://explorer.athom.lol/wisp/",
+	"wss://anura.pro/",
+].filter((url, index, list) => list.indexOf(url) === index);
 const DEFAULT_TRANSPORT: AvailableTransports = "libcurl";
 const DEFAULT_HOME_URL = "https://google.com";
 const DEFAULT_MAX_REQUESTS = 200;
@@ -23,6 +29,7 @@ export const demoSettingsStore = createStore(
 	{
 		transport: DEFAULT_TRANSPORT as AvailableTransports,
 		wispUrl: DEFAULT_WISP_URL,
+		wispServers: DEFAULT_WISP_SERVERS,
 		homeUrl: DEFAULT_HOME_URL,
 		maxRequests: DEFAULT_MAX_REQUESTS,
 		panicKey: DEFAULT_PANIC_KEY,
@@ -123,6 +130,7 @@ export function normalizeIconUrl(value: string) {
 
 export const demoSettingsDefaults = {
 	wispUrl: normalizeWispUrl(DEFAULT_WISP_URL),
+	wispServers: DEFAULT_WISP_SERVERS.map(normalizeWispUrl),
 	transport: DEFAULT_TRANSPORT,
 	homeUrl: normalizeHomeUrl(DEFAULT_HOME_URL),
 	maxRequests: DEFAULT_MAX_REQUESTS,
