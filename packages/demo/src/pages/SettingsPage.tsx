@@ -236,9 +236,9 @@ const SettingsView: Component<
 						this.wispUrlInput = (e.target as HTMLSelectElement).value;
 					}}
 				>
-					{use(this.wispServersInput).map((server) => (
-						<option value={server}>{server}</option>
-					))}
+					{use(this.wispServersInput).map((servers) =>
+						servers.map((server) => <option value={server}>{server}</option>)
+					)}
 				</select>
 				<div class="inline-field">
 					<input
